@@ -249,7 +249,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 119644809}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -20, z: 0}
+  m_LocalPosition: {x: -10, y: -20, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -263,7 +263,7 @@ SphereCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 119644809}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: cf43963f18e56054b96667a2fa1abc64, type: 2}
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
@@ -344,9 +344,11 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 450129010}
+  - component: {fileID: 450129012}
+  - component: {fileID: 450129011}
   m_Layer: 0
   m_Name: Ground Check
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -359,13 +361,40 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 450129009}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.775, z: 0}
+  m_LocalPosition: {x: 0, y: -1.032, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 750003672}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &450129011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 450129009}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3760d164b5a29da4f9a202ef54b93609, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player: {fileID: 750003677}
+  col: {fileID: 450129012}
+--- !u!65 &450129012
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 450129009}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.5, y: 0.1, z: 0.5}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &639968785
 GameObject:
   m_ObjectHideFlags: 0
@@ -525,7 +554,7 @@ Light:
       e33: 1
     m_UseCullingMatrixOverride: 0
   m_Cookie: {fileID: 0}
-  m_DrawHalo: 0
+  m_DrawHalo: 1
   m_Flare: {fileID: 0}
   m_RenderMode: 0
   m_CullingMask:
@@ -551,7 +580,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 705507993}
   m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
-  m_LocalPosition: {x: 0, y: 3, z: 0}
+  m_LocalPosition: {x: 0, y: 8.47, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -620,7 +649,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 750003671}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 1.8699999, z: 0}
   m_LocalScale: {x: 1, y: 1.68, z: 1}
   m_ConstrainProportionsScale: 0
@@ -727,11 +756,13 @@ MonoBehaviour:
   gameManager: {fileID: 1493670457}
   playerInput: {fileID: 1493670455}
   speed: 10
-  xSensitivity: 0.1
-  ySensitivity: 0.1
-  jumpForce: 1
-  maxForce: 1
-  snappiness: 0
+  xSensitivity: 0.2
+  ySensitivity: 0.15
+  jumpForce: 5
+  maxForce: 5
+  snappiness: 3
+  minSpeed: 0.01
+  isGrounded: 0
 --- !u!1 &888919264
 GameObject:
   m_ObjectHideFlags: 0
@@ -910,7 +941,7 @@ BoxCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 928518718}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: cf43963f18e56054b96667a2fa1abc64, type: 2}
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
@@ -974,7 +1005,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 928518718}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -1}
+  m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1599,7 +1630,7 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 06593f79-54bf-48c1-8d75-f02f2b4012f2
     m_ActionName: Space/RollRight[/XInputControllerWindows/rightShoulder]
-  m_NeverAutoSwitchControlSchemes: 1
+  m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: Gamepad
   m_DefaultActionMap: Space
   m_SplitScreenIndex: -1
@@ -1631,7 +1662,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe94a3df93fdcd045865e20de0ec6aa2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gravityValue: {x: 0, y: 0, z: 0}
+  gravityValue: {x: 0, y: -20, z: 0}
   _gravity: 1
   playerBody: {fileID: 750003677}
 --- !u!1 &1594458524
@@ -1715,7 +1746,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1670096294}
   m_Layer: 0
-  m_Name: PlayerRoot
+  m_Name: PlayerCamRoot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -7,7 +7,7 @@ public class RigidbodyMovement : MonoBehaviour {
     [SerializeField] Transform playerCamera; 
     [SerializeField] Rigidbody playerBody; 
     [SerializeField] GameManager gameManager; 
-    [SerializeField] PlayerInput playerInput; 
+    [SerializeField] PlayerInput playerInput;
     [Space]
     [SerializeField] float speed; 
     [SerializeField] float xSensitivity; 
@@ -15,12 +15,15 @@ public class RigidbodyMovement : MonoBehaviour {
     [SerializeField] float jumpForce; 
     [SerializeField] float maxForce; 
     [SerializeField] float snappiness; 
+    [SerializeField] float minSpeed; 
 
     private Vector2 move; 
     private Vector2 look; 
     private Vector3 targetVelocityLerp; 
+    private Vector3 targetRotationLerp; 
     private float lookRotation; 
-    private bool isGrounded; 
+    [SerializeField] bool isGrounded; 
+    private float stepTime = 0.1f; 
 
     private bool leftRollPressed; 
     private bool rightRollPressed; 
@@ -45,6 +48,12 @@ public class RigidbodyMovement : MonoBehaviour {
         else {
             FreeMove(); 
         }
+        // if (playerBody.velocity.sqrMagnitude < minSpeed) {
+        //     playerBody.velocity = Vector3.zero; 
+        // }
+        // if (playerBody.angularVelocity.sqrMagnitude < minSpeed) {
+        //     playerBody.angularVelocity = Vector3.zero; 
+        // }
     }
 
     private void LateUpdate() {
@@ -72,7 +81,7 @@ public class RigidbodyMovement : MonoBehaviour {
         // velocityChange = new Vector3(velocityChange.x, 0, velocityChange.z); 
 
         // Limit force 
-        Vector3.ClampMagnitude(velocityChange, maxForce); 
+        // Vector3.ClampMagnitude(velocityChange, maxForce); 
 
         playerBody.AddForce(velocityChange, ForceMode.Acceleration); 
     }
@@ -85,11 +94,11 @@ public class RigidbodyMovement : MonoBehaviour {
 
         // Align direction 
         targetVelocity = transform.TransformDirection(targetVelocity); 
-        // targetVelocityLerp = Vector3.Lerp(targetVelocityLerp, targetVelocity, snappiness); 
+        targetVelocityLerp = Vector3.Lerp(targetVelocityLerp, targetVelocity, snappiness); 
 
         // Calculate forces 
-        Vector3 velocityChange = (targetVelocity - currentVelocity); 
-        // Vector3 velocityChange = (targetVelocityLerp - currentVelocity); 
+        // Vector3 velocityChange = (targetVelocity - currentVelocity); 
+        Vector3 velocityChange = (targetVelocityLerp - currentVelocity); 
         velocityChange = new Vector3(velocityChange.x, 0, velocityChange.z); 
 
         // Limit force 
@@ -109,18 +118,18 @@ public class RigidbodyMovement : MonoBehaviour {
     }
 
     private void FreeLook() {
-        // turn
-        // transform.Rotate(-look.y * ySensitivity, look.x * xSensitivity, 0); 
+        // Find target torque
         Vector3 currentTorque = playerBody.angularVelocity; 
         Vector3 targetTorque = new Vector3(-look.y, look.x, 0); 
 
+        // Calculate forces 
         Vector3 torqueChange = (targetTorque - currentTorque); 
         torqueChange = new Vector3(torqueChange.x, torqueChange.y, 0); 
 
+        // Limit force
         Vector3.ClampMagnitude(torqueChange, maxForce); 
         playerBody.AddRelativeTorque(torqueChange, ForceMode.Acceleration); 
 
-        // look 
         playerCamera.transform.eulerAngles = transform.eulerAngles; 
     }
 
@@ -200,13 +209,44 @@ public class RigidbodyMovement : MonoBehaviour {
     public void OnGravityEnable() {
         playerInput.currentActionMap = playerInput.actions.FindActionMap("Gravity"); 
         playerBody.freezeRotation = true; 
-        transform.Rotate(0, transform.eulerAngles.y, 0); 
-        playerBody.WakeUp(); 
+        // transform.eulerAngles = new Vector3(0, transform.eulerAngles.y, 0); 
+
+        playerBody.AddForce(Vector3.down, ForceMode.Impulse); 
+        playerInput.enabled = false;
+        playerBody.useGravity = false; 
+        StartCoroutine(AlignToGravity()); 
     }
 
     public void OnGravityDisable() {
         playerInput.currentActionMap = playerInput.actions.FindActionMap("Space"); 
         playerBody.freezeRotation = false; 
         transform.eulerAngles = playerCamera.eulerAngles; 
+    }
+
+    private IEnumerator AlignToGravity() {
+        Debug.Log("Local gravity detected.");
+        // Find target rotation
+        Vector3 currentRotation = playerBody.rotation.eulerAngles; 
+        Vector3 targetRotation = new Vector3(0, transform.eulerAngles.y, 0); 
+        while (currentRotation != targetRotation) {
+            // Update current rotation 
+            currentRotation = playerBody.rotation.eulerAngles; 
+
+            // Calculate this step
+            targetRotationLerp = Vector3.Lerp(targetRotationLerp, targetRotation, snappiness); 
+
+            // Calculate forces 
+            Vector3 rotationChange = (targetRotationLerp - currentRotation); 
+            rotationChange = new Vector3(rotationChange.x, 0, rotationChange.z); 
+
+            // Dampen forces 
+            Vector3.Normalize(rotationChange); 
+
+            // Apply change
+            playerBody.AddRelativeTorque(rotationChange, ForceMode.Acceleration);
+            yield return new WaitForSeconds(stepTime); 
+        }
+        playerBody.useGravity = true; 
+        playerInput.enabled = true; 
     }
 }

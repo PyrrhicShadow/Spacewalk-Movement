@@ -9,6 +9,14 @@ public class GameManager : MonoBehaviour {
 
     public bool gravity { get { return _gravity; } private set { _gravity = value; } }
 
+    private void Start() {
+        if(gravity) {
+            EnableGravity(); 
+        }
+        else {
+            DisableGravity(); 
+        }
+    }
 
     [ContextMenu("Disable Gravity")]
     public void DisableGravity() {
