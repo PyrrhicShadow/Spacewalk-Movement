@@ -23,13 +23,18 @@ public class RigidbodyMovement : MonoBehaviour {
     private Vector3 targetRotationLerp; 
     private float lookRotation; 
     [SerializeField] bool isGrounded; 
-    private float stepTime = 0.1f; 
+    private float stepTime = .05f; 
+    private float elapsedTime = 0; 
 
     private bool leftRollPressed; 
     private bool rightRollPressed; 
+    private bool crouched; 
+    private bool ascending;  
+
+    private Vector3 normalScale; 
 
     private void Awake() {
-
+        normalScale = transform.localScale; 
     }
 
     private void Start() {
@@ -47,18 +52,15 @@ public class RigidbodyMovement : MonoBehaviour {
         }
         else {
             FreeMove(); 
+            Roll(); 
         }
-        // if (playerBody.velocity.sqrMagnitude < minSpeed) {
-        //     playerBody.velocity = Vector3.zero; 
-        // }
-        // if (playerBody.angularVelocity.sqrMagnitude < minSpeed) {
-        //     playerBody.angularVelocity = Vector3.zero; 
-        // }
+        // DeadZone(); 
     }
 
     private void LateUpdate() {
         if (gameManager.gravity) {
             FixedLook(); 
+            Crouch(); 
         }
         else {
             FreeLook(); 
@@ -84,6 +86,13 @@ public class RigidbodyMovement : MonoBehaviour {
         // Vector3.ClampMagnitude(velocityChange, maxForce); 
 
         playerBody.AddForce(velocityChange, ForceMode.Acceleration); 
+
+        if (ascending) {
+            Ascend(); 
+        }
+        if (crouched) {
+            Descend(); 
+        }
     }
 
     private void FixedMove() {
@@ -144,24 +153,37 @@ public class RigidbodyMovement : MonoBehaviour {
     }
 
     private void Crouch() {
-
+        if (crouched) {
+            transform.localScale = Vector3.one; 
+        }
+        else {
+            transform.localScale = normalScale; 
+        }
     }
 
     private void Ascend() {
-
+        playerBody.AddRelativeForce(Vector3.up * jumpForce, ForceMode.Acceleration); 
     }
 
     private void Descend() {
-
+        playerBody.AddRelativeForce(Vector3.down * jumpForce, ForceMode.Acceleration); 
     }
 
-    private void Brake() {
-        playerBody.velocity = Vector3.zero; 
-        playerBody.angularVelocity = Vector3.zero; 
-    }
-
-    private void Roll(int direction) {
-        playerBody.angularVelocity = Vector3.forward * direction; 
+    private void Roll() {
+        if (rightRollPressed && leftRollPressed) {
+            playerBody.velocity = Vector3.zero; 
+            playerBody.AddRelativeTorque(playerBody.angularVelocity, ForceMode.Acceleration); 
+        }
+        else {
+            int direction = 0; 
+            if (rightRollPressed) {
+                direction = 1; 
+            }
+            else if (leftRollPressed) {
+                direction = -1; 
+            }
+            playerBody.AddRelativeTorque(Vector3.forward * direction, ForceMode.Acceleration); 
+        }
     }
 
     public void SetGrounded(bool state) {
@@ -169,25 +191,11 @@ public class RigidbodyMovement : MonoBehaviour {
     }
 
     public void OnRollLeft(InputAction.CallbackContext context) {
-        if(rightRollPressed) {
-            Brake(); 
-        }
-        else {
-            // rotate player z
             leftRollPressed = context.ReadValueAsButton(); 
-            Roll(1); 
-        }
     }
 
     public void OnRollRight(InputAction.CallbackContext context) {
-        if (leftRollPressed) {
-            Brake(); 
-        }
-        else {
-            // rotate player z 
             rightRollPressed = context.ReadValueAsButton(); 
-            Roll(-1); 
-        }
     }
 
     public void OnMove(InputAction.CallbackContext context) {
@@ -199,54 +207,63 @@ public class RigidbodyMovement : MonoBehaviour {
     }
 
     public void OnJump(InputAction.CallbackContext context) {
-        Jump(); 
+        if (gameManager.gravity) {
+            Jump(); 
+        }
+        else {
+            ascending = context.ReadValueAsButton(); 
+        }
     }
 
     public void OnCrouch(InputAction.CallbackContext context) {
-
+        crouched = context.ReadValueAsButton(); 
     }
 
     public void OnGravityEnable() {
+        Debug.Log("Normal gravity detected.");
         playerInput.currentActionMap = playerInput.actions.FindActionMap("Gravity"); 
         playerBody.freezeRotation = true; 
-        // transform.eulerAngles = new Vector3(0, transform.eulerAngles.y, 0); 
+        playerBody.velocity = Vector3.zero; 
+        playerBody.angularVelocity = Vector3.zero; 
+        transform.eulerAngles = new Vector3(0, transform.eulerAngles.y, 0); 
 
         playerBody.AddForce(Vector3.down, ForceMode.Impulse); 
-        playerInput.enabled = false;
-        playerBody.useGravity = false; 
-        StartCoroutine(AlignToGravity()); 
+        // playerInput.enabled = false;
+        // playerBody.useGravity = false; 
+        // elapsedTime = 0; 
+        // StartCoroutine(AlignToGravity()); 
     }
 
     public void OnGravityDisable() {
+        Debug.Log("Micro gravity detected.");
         playerInput.currentActionMap = playerInput.actions.FindActionMap("Space"); 
         playerBody.freezeRotation = false; 
         transform.eulerAngles = playerCamera.eulerAngles; 
     }
 
     private IEnumerator AlignToGravity() {
-        Debug.Log("Local gravity detected.");
         // Find target rotation
         Vector3 currentRotation = playerBody.rotation.eulerAngles; 
         Vector3 targetRotation = new Vector3(0, transform.eulerAngles.y, 0); 
-        while (currentRotation != targetRotation) {
-            // Update current rotation 
-            currentRotation = playerBody.rotation.eulerAngles; 
+        while (currentRotation.normalized != targetRotation.normalized) {
 
             // Calculate this step
-            targetRotationLerp = Vector3.Lerp(targetRotationLerp, targetRotation, snappiness); 
+            targetRotationLerp = Vector3.Lerp(currentRotation, targetRotation, elapsedTime + stepTime); 
 
-            // Calculate forces 
-            Vector3 rotationChange = (targetRotationLerp - currentRotation); 
-            rotationChange = new Vector3(rotationChange.x, 0, rotationChange.z); 
-
-            // Dampen forces 
-            Vector3.Normalize(rotationChange); 
-
-            // Apply change
-            playerBody.AddRelativeTorque(rotationChange, ForceMode.Acceleration);
-            yield return new WaitForSeconds(stepTime); 
+            playerBody.transform.eulerAngles = targetRotationLerp; 
+            // yield return new WaitForSeconds(stepTime); 
+            yield return new WaitForFixedUpdate(); 
         }
         playerBody.useGravity = true; 
         playerInput.enabled = true; 
+    }
+
+    private void DeadZone() {
+        if (playerBody.velocity.sqrMagnitude < minSpeed) {
+            playerBody.velocity = Vector3.zero; 
+        }
+        if (playerBody.angularVelocity.sqrMagnitude < minSpeed) {
+            playerBody.angularVelocity = Vector3.zero; 
+        }
     }
 }

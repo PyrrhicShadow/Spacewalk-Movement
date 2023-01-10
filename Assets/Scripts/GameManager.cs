@@ -6,6 +6,8 @@ public class GameManager : MonoBehaviour {
     [SerializeField] Vector3 gravityValue; 
     [SerializeField] bool _gravity; 
     [SerializeField] RigidbodyMovement playerBody; 
+    [SerializeField] float gravityChangeInterval; 
+    private float timer; 
 
     public bool gravity { get { return _gravity; } private set { _gravity = value; } }
 
@@ -15,6 +17,21 @@ public class GameManager : MonoBehaviour {
         }
         else {
             DisableGravity(); 
+        }
+    }
+
+    private void Update() {
+        if (timer < gravityChangeInterval) {
+            timer += Time.deltaTime; 
+        }
+        else {
+            if (gravity) {
+                DisableGravity(); 
+            }
+            else {
+                EnableGravity(); 
+            }
+            timer = 0; 
         }
     }
 
