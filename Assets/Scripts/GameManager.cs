@@ -21,18 +21,7 @@ public class GameManager : MonoBehaviour {
     }
 
     private void Update() {
-        if (timer < gravityChangeInterval) {
-            timer += Time.deltaTime; 
-        }
-        else {
-            if (gravity) {
-                DisableGravity(); 
-            }
-            else {
-                EnableGravity(); 
-            }
-            timer = 0; 
-        }
+        // GravityBouncing(); 
     }
 
     [ContextMenu("Disable Gravity")]
@@ -47,5 +36,20 @@ public class GameManager : MonoBehaviour {
         Physics.gravity = gravityValue; 
         gravity = true; 
         playerBody.OnGravityEnable(); 
+    }
+
+    private void GravityBouncing() {
+        if (timer < gravityChangeInterval) {
+            timer += Time.deltaTime; 
+        }
+        else {
+            if (gravity) {
+                DisableGravity(); 
+            }
+            else {
+                EnableGravity(); 
+            }
+            timer = 0; 
+        }
     }
 }

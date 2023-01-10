@@ -13,21 +13,21 @@ public class GroundCheck : MonoBehaviour {
     }
 
     private void OnTriggerEnter(Collider other) {
-        if (!other.gameObject.CompareTag(this.gameObject.tag)) {
+        if (!other.gameObject.CompareTag("Player")) {
             // Debug.Log("Grounded."); 
             player.SetGrounded(true); 
         }
     }
 
     private void OnTriggerExit(Collider other) {
-        if (!other.gameObject.CompareTag(this.gameObject.tag)) {
+        if (!other.gameObject.CompareTag("Player")) {
             // Debug.Log("Not grounded."); 
             player.SetGrounded(false); 
         }
     }
 
     private void OnTriggerStay(Collider other) {
-        if (!other.gameObject.CompareTag(this.gameObject.tag)) {
+        if (!other.gameObject.CompareTag("Player")) {
             player.SetGrounded(true); 
         }
     }
