@@ -15,7 +15,7 @@ public class MicrogravityZone : MonoBehaviour {
 
     private void OnTriggerExit(Collider other) {
         if (other.CompareTag("Player")) {
-            other.gameObject.GetComponent<RigidbodyMovement>().OnGravityEnable(); 
+            other.gameObject.GetComponent<RigidbodyMovement>().OnNormalGravity(); 
         }
         else {
             Rigidbody otherBody = other.gameObject.GetComponent<Rigidbody>(); 
@@ -28,7 +28,7 @@ public class MicrogravityZone : MonoBehaviour {
 
     private void OnTriggerEnter(Collider other) {
         if (other.CompareTag("Player")) {
-            other.gameObject.GetComponent<RigidbodyMovement>().OnGravityDisable(); 
+            other.gameObject.GetComponent<RigidbodyMovement>().OnMicroGravity(); 
         }
         else {
             Rigidbody otherBody = other.gameObject.GetComponent<Rigidbody>(); 

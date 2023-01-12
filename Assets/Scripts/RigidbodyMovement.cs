@@ -6,7 +6,7 @@ using UnityEngine.InputSystem;
 public class RigidbodyMovement : MonoBehaviour {
     [SerializeField] Transform playerCamera; 
     [SerializeField] Rigidbody playerBody; 
-    [SerializeField] GameManager gameManager; 
+    // [SerializeField] GameManager gameManager; 
     [SerializeField] PlayerInput playerInput;
     [Space]
     [SerializeField] float speed; 
@@ -37,10 +37,10 @@ public class RigidbodyMovement : MonoBehaviour {
 
     private void Start() {
         if (playerBody.useGravity) {
-            OnGravityEnable(); 
+            OnNormalGravity(); 
         }
         else {
-            OnGravityDisable(); 
+            OnMicroGravity(); 
         }
     }
 
@@ -62,7 +62,6 @@ public class RigidbodyMovement : MonoBehaviour {
         else {
             FreeLook(); 
         }
-        Crouch(); 
     }
 
     private void FreeMove() {
@@ -111,7 +110,7 @@ public class RigidbodyMovement : MonoBehaviour {
         // Limit force 
         Vector3.ClampMagnitude(velocityChange, maxForce); 
 
-        playerBody.AddForce(velocityChange, ForceMode.VelocityChange);
+        playerBody.AddForce(velocityChange, ForceMode.Acceleration);
     }
 
     private void FixedLook() {
@@ -152,10 +151,12 @@ public class RigidbodyMovement : MonoBehaviour {
 
     private void Crouch() {
         if (crouched) {
-            transform.localScale = Vector3.one; 
+            transform.localScale = normalScale; 
+            crouched = false; 
         }
         else {
-            transform.localScale = normalScale; 
+            transform.localScale = Vector3.one; 
+            crouched = true; 
         }
     }
 
@@ -170,7 +171,7 @@ public class RigidbodyMovement : MonoBehaviour {
     private void Roll() {
         if (rightRollPressed && leftRollPressed) {
             playerBody.velocity = Vector3.zero; 
-            playerBody.AddRelativeTorque(playerBody.angularVelocity, ForceMode.Acceleration); 
+            playerBody.angularVelocity = Vector3.zero;  
         }
         else {
             int direction = 0; 
@@ -214,13 +215,15 @@ public class RigidbodyMovement : MonoBehaviour {
     }
 
     public void OnCrouch(InputAction.CallbackContext context) {
-        crouched = context.ReadValueAsButton(); 
-        if (!gameManager.gravity) {
+        if (playerBody.useGravity) {
+            Crouch(); 
+        }
+        else {
             descending = context.ReadValueAsButton(); 
         }
     }
 
-    public void OnGravityEnable() {
+    public void OnNormalGravity() {
         Debug.Log("Normal gravity detected.");
         playerInput.currentActionMap = playerInput.actions.FindActionMap("Gravity"); 
         playerBody.useGravity = true; 
@@ -229,11 +232,11 @@ public class RigidbodyMovement : MonoBehaviour {
         playerBody.angularVelocity = Vector3.zero; 
         // transform.eulerAngles = new Vector3(0, transform.eulerAngles.y, 0); 
         playerInput.enabled = false; 
-        crouched = false; 
+        Crouch(); 
         StartCoroutine(AlignToGravity(transform.rotation)); 
     }
 
-    public void OnGravityDisable() {
+    public void OnMicroGravity() {
         Debug.Log("Micro gravity detected.");
         playerInput.currentActionMap = playerInput.actions.FindActionMap("Space"); 
         playerBody.useGravity = false; 

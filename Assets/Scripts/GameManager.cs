@@ -28,14 +28,14 @@ public class GameManager : MonoBehaviour {
     public void DisableGravity() {
         Physics.gravity = Vector3.zero; 
         gravity = false; 
-        playerBody.OnGravityDisable(); 
+        playerBody.OnMicroGravity(); 
     }
 
     [ContextMenu("Enable Gravity")]
     public void EnableGravity() {
         Physics.gravity = gravityValue; 
         gravity = true; 
-        playerBody.OnGravityEnable(); 
+        playerBody.OnNormalGravity(); 
     }
 
     private void GravityBouncing() {
