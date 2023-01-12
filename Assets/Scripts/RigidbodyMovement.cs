@@ -28,7 +28,7 @@ public class RigidbodyMovement : MonoBehaviour {
     private bool rightRollPressed; 
     private bool crouched; 
     private bool ascending;  
-
+    private bool descending; 
     private Vector3 normalScale; 
 
     private void Awake() {
@@ -36,7 +36,7 @@ public class RigidbodyMovement : MonoBehaviour {
     }
 
     private void Start() {
-        if (gameManager.gravity) {
+        if (playerBody.useGravity) {
             OnGravityEnable(); 
         }
         else {
@@ -45,7 +45,7 @@ public class RigidbodyMovement : MonoBehaviour {
     }
 
     private void FixedUpdate() {
-        if (gameManager.gravity) {
+        if (playerBody.useGravity) {
             FixedMove(); 
         }
         else {
@@ -56,13 +56,13 @@ public class RigidbodyMovement : MonoBehaviour {
     }
 
     private void LateUpdate() {
-        if (gameManager.gravity) {
+        if (playerBody.useGravity) {
             FixedLook(); 
-            Crouch(); 
         }
         else {
             FreeLook(); 
         }
+        Crouch(); 
     }
 
     private void FreeMove() {
@@ -88,7 +88,7 @@ public class RigidbodyMovement : MonoBehaviour {
         if (ascending) {
             Ascend(); 
         }
-        if (crouched) {
+        if (descending) {
             Descend(); 
         }
     }
@@ -205,7 +205,7 @@ public class RigidbodyMovement : MonoBehaviour {
     }
 
     public void OnJump(InputAction.CallbackContext context) {
-        if (gameManager.gravity) {
+        if (playerBody.useGravity) {
             Jump(); 
         }
         else {
@@ -215,25 +215,31 @@ public class RigidbodyMovement : MonoBehaviour {
 
     public void OnCrouch(InputAction.CallbackContext context) {
         crouched = context.ReadValueAsButton(); 
+        if (!gameManager.gravity) {
+            descending = context.ReadValueAsButton(); 
+        }
     }
 
     public void OnGravityEnable() {
         Debug.Log("Normal gravity detected.");
         playerInput.currentActionMap = playerInput.actions.FindActionMap("Gravity"); 
+        playerBody.useGravity = true; 
         playerBody.freezeRotation = true; 
         playerBody.velocity = Vector3.zero; 
         playerBody.angularVelocity = Vector3.zero; 
         // transform.eulerAngles = new Vector3(0, transform.eulerAngles.y, 0); 
-        playerBody.useGravity = false; 
         playerInput.enabled = false; 
+        crouched = false; 
         StartCoroutine(AlignToGravity(transform.rotation)); 
     }
 
     public void OnGravityDisable() {
         Debug.Log("Micro gravity detected.");
         playerInput.currentActionMap = playerInput.actions.FindActionMap("Space"); 
+        playerBody.useGravity = false; 
         playerBody.freezeRotation = false; 
         transform.eulerAngles = playerCamera.eulerAngles; 
+        crouched = true; 
     }
 
     private IEnumerator AlignToGravity(Quaternion currentRotation) {
@@ -252,7 +258,6 @@ public class RigidbodyMovement : MonoBehaviour {
             }
         }
         playerBody.AddRelativeForce(Vector3.forward, ForceMode.VelocityChange); 
-        playerBody.useGravity = true; 
         playerInput.enabled = true; 
     }
 
