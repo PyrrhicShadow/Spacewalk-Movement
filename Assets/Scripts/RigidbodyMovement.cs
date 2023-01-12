@@ -20,11 +20,9 @@ public class RigidbodyMovement : MonoBehaviour {
     private Vector2 move; 
     private Vector2 look; 
     private Vector3 targetVelocityLerp; 
-    private Vector3 targetRotationLerp; 
     private float lookRotation; 
     [SerializeField] bool isGrounded; 
-    private float stepTime = .05f; 
-    private float elapsedTime = 0; 
+    private float stepTime = 0.5f; 
 
     private bool leftRollPressed; 
     private bool rightRollPressed; 
@@ -225,13 +223,10 @@ public class RigidbodyMovement : MonoBehaviour {
         playerBody.freezeRotation = true; 
         playerBody.velocity = Vector3.zero; 
         playerBody.angularVelocity = Vector3.zero; 
-        transform.eulerAngles = new Vector3(0, transform.eulerAngles.y, 0); 
-
-        playerBody.AddForce(Vector3.down, ForceMode.Impulse); 
-        // playerInput.enabled = false;
-        // playerBody.useGravity = false; 
-        // elapsedTime = 0; 
-        // StartCoroutine(AlignToGravity()); 
+        // transform.eulerAngles = new Vector3(0, transform.eulerAngles.y, 0); 
+        playerBody.useGravity = false; 
+        playerInput.enabled = false; 
+        StartCoroutine(AlignToGravity(transform.rotation)); 
     }
 
     public void OnGravityDisable() {
@@ -241,19 +236,22 @@ public class RigidbodyMovement : MonoBehaviour {
         transform.eulerAngles = playerCamera.eulerAngles; 
     }
 
-    private IEnumerator AlignToGravity() {
+    private IEnumerator AlignToGravity(Quaternion currentRotation) {
         // Find target rotation
-        Vector3 currentRotation = playerBody.rotation.eulerAngles; 
-        Vector3 targetRotation = new Vector3(0, transform.eulerAngles.y, 0); 
-        while (currentRotation.normalized != targetRotation.normalized) {
+        Quaternion targetRotation = Quaternion.Euler(0, playerBody.transform.eulerAngles.y, 0); 
 
-            // Calculate this step
-            targetRotationLerp = Vector3.Lerp(currentRotation, targetRotation, elapsedTime + stepTime); 
+        float progress = 0f; 
 
-            playerBody.transform.eulerAngles = targetRotationLerp; 
-            // yield return new WaitForSeconds(stepTime); 
-            yield return new WaitForFixedUpdate(); 
+        while (progress < 1f) {
+            transform.rotation = Quaternion.Slerp(currentRotation, targetRotation, progress);
+            playerCamera.transform.rotation = Quaternion.Slerp(playerCamera.transform.rotation, Quaternion.Euler(0, playerBody.transform.eulerAngles.y, 0), progress); 
+            progress += Time.deltaTime * stepTime; 
+
+            if (progress <= 1f) {
+                yield return new WaitForFixedUpdate(); 
+            }
         }
+        playerBody.AddRelativeForce(Vector3.forward, ForceMode.VelocityChange); 
         playerBody.useGravity = true; 
         playerInput.enabled = true; 
     }
