@@ -21,7 +21,8 @@ public class RigidbodyMovement : MonoBehaviour {
     private Vector2 look; 
     private Vector3 targetVelocityLerp; 
     private float lookRotation; 
-    [SerializeField] bool isGrounded; 
+    [SerializeField] bool isGrounded = false; 
+    [SerializeField] bool isDiving = false; 
     private float stepTime = 0.5f; 
 
     private bool leftRollPressed; 
@@ -36,10 +37,7 @@ public class RigidbodyMovement : MonoBehaviour {
     }
 
     private void Start() {
-        if (playerInput.currentActionMap == playerInput.actions.FindActionMap("Water")) {
-            OnWaterEnter(); 
-        }
-        else if (playerInput.currentActionMap == playerInput.actions.FindActionMap("Space")) {
+        if (playerInput.currentActionMap == playerInput.actions.FindActionMap("Space")) {
             OnMicroGravity(); 
         }
         else {
@@ -48,23 +46,29 @@ public class RigidbodyMovement : MonoBehaviour {
     }
 
     private void FixedUpdate() {
-        if (playerInput.currentActionMap == playerInput.actions.FindActionMap("Gravity")) {
-            FixedMove(); 
+        if (playerInput.currentActionMap == playerInput.actions.FindActionMap("Space")) {
+            FreeMove();
+            Fly(); 
+            Roll(); 
+        }
+        else if (playerInput.currentActionMap == playerInput.actions.FindActionMap("Water")) {
+            FreeMove(); 
+            Dive(); 
         }
         else {
-            FreeMove(); 
-            if (playerInput.currentActionMap == playerInput.actions.FindActionMap("Space")) {
-                Roll(); 
-            }
+            FixedMove(); 
         }
     }
 
     private void LateUpdate() {
-        if (playerInput.currentActionMap == playerInput.actions.FindActionMap("Gravity")) {
-            FixedLook(); 
+        if (playerInput.currentActionMap == playerInput.actions.FindActionMap("Space")) {
+            FreeLook(); 
+        }
+        else if (playerInput.currentActionMap == playerInput.actions.FindActionMap("Water")) {
+            WaterLook(); 
         }
         else {
-            FreeLook(); 
+            FixedLook(); 
         }
     }
 
@@ -102,10 +106,10 @@ public class RigidbodyMovement : MonoBehaviour {
 
     private void FixedLook() {
         // turn
-        transform.Rotate(Vector3.up * look.x /* * 2 * xSensitivity */); 
+        transform.Rotate(Vector3.up * look.x * xSensitivity); 
 
         // look 
-        lookRotation += (-look.y /* * ySensitivity */); 
+        lookRotation += (-look.y * ySensitivity); 
         lookRotation = Mathf.Clamp(lookRotation, -90, 90); 
         playerCamera.transform.eulerAngles = new Vector3(lookRotation, playerCamera.transform.eulerAngles.y, playerCamera.transform.eulerAngles.z); 
     }
@@ -156,13 +160,6 @@ public class RigidbodyMovement : MonoBehaviour {
         // Vector3.ClampMagnitude(velocityChange, maxForce); 
 
         playerBody.AddForce(velocityChange, ForceMode.Acceleration); 
-
-        if (ascending) {
-            Ascend(); 
-        }
-        if (descending) {
-            Descend(); 
-        }
     }
 
     private void FreeLook() {
@@ -178,15 +175,16 @@ public class RigidbodyMovement : MonoBehaviour {
         Vector3.ClampMagnitude(torqueChange, maxForce); 
         playerBody.AddRelativeTorque(torqueChange, ForceMode.Acceleration); 
 
-        playerCamera.transform.eulerAngles = transform.eulerAngles; 
+        playerCamera.eulerAngles = transform.eulerAngles; 
     }
 
-    private void Ascend() {
-        playerBody.AddRelativeForce(Vector3.up * jumpForce, ForceMode.Acceleration); 
-    }
-
-    private void Descend() {
-        playerBody.AddRelativeForce(Vector3.down * jumpForce, ForceMode.Acceleration); 
+    private void Fly() {
+        if (ascending) {
+            playerBody.AddRelativeForce(Vector3.up, ForceMode.VelocityChange); 
+        }
+        if (descending) {
+            playerBody.AddRelativeForce(Vector3.down, ForceMode.VelocityChange); 
+        }
     }
 
     private void Roll() {
@@ -204,6 +202,31 @@ public class RigidbodyMovement : MonoBehaviour {
             }
             playerBody.AddRelativeTorque(Vector3.forward * direction, ForceMode.Acceleration); 
         }
+    }
+
+    /** Swimming and Water movement **/ 
+    private void WaterLook() {
+        // turn
+        transform.Rotate(Vector3.up * look.x * xSensitivity); 
+
+        // look 
+        lookRotation += (-look.y * ySensitivity); 
+        lookRotation = Mathf.Clamp(lookRotation, -90, 90); 
+        transform.eulerAngles = new Vector3(lookRotation, transform.eulerAngles.y, 0); 
+    }
+
+    private void Dive() {
+        if (ascending) {
+            playerBody.AddForce(Vector3.up, ForceMode.VelocityChange); 
+        }
+        if (descending) {
+            playerBody.AddForce(Vector3.down, ForceMode.VelocityChange); 
+        }
+    }
+
+    private void Buoyancy() {
+        // playerBody.AddForce(Vector3.up, ForceMode.Acceleration);
+        playerBody.velocity = new Vector3(playerBody.velocity.x, 0, playerBody.velocity.z); 
     }
 
     /** Buttons **/
@@ -237,6 +260,15 @@ public class RigidbodyMovement : MonoBehaviour {
             Crouch(); 
         }
         descending = context.ReadValueAsButton(); 
+    }
+
+    public void OnDive(InputAction.CallbackContext context) {
+        if (isDiving) {
+            isDiving = false; 
+        }
+        else {
+            isDiving = true; 
+        }
     }
 
     /** Changing movement types **/ 
@@ -273,7 +305,7 @@ public class RigidbodyMovement : MonoBehaviour {
 
         while (progress < 1f) {
             transform.rotation = Quaternion.Slerp(currentRotation, targetRotation, progress);
-            playerCamera.transform.rotation = Quaternion.Slerp(playerCamera.transform.rotation, Quaternion.Euler(0, playerBody.transform.eulerAngles.y, 0), progress); 
+            playerCamera.rotation = Quaternion.Slerp(playerCamera.rotation, Quaternion.Euler(0, playerBody.transform.eulerAngles.y, 0), progress); 
             progress += Time.deltaTime * stepTime; 
 
             if (progress <= 1f) {
@@ -284,16 +316,25 @@ public class RigidbodyMovement : MonoBehaviour {
         playerInput.enabled = true; 
     }
 
-    public void OnWaterEnter() {
+    public void OnWaterEnter(float waterDragMult) {
         Debug.Log("Splash"); 
         playerInput.currentActionMap = playerInput.actions.FindActionMap("Water"); 
-        playerBody.useGravity = false; 
+        playerCamera.eulerAngles = new Vector3(0, playerBody.transform.eulerAngles.y, 0); 
+        // playerBody.useGravity = false; 
+        playerBody.drag *= waterDragMult; 
+        playerBody.angularDrag *= waterDragMult; 
+        crouched = true; 
+        isDiving = false; 
     }
 
     // Water always leads to normal gravity
-    public void OnWaterExit() {
+    public void OnWaterExit(float waterDragMult) {
         Debug.Log("Splish"); 
         playerInput.currentActionMap = playerInput.actions.FindActionMap("Gravity"); 
-        playerBody.useGravity = true; 
+        transform.eulerAngles = new Vector3(0, playerBody.transform.eulerAngles.y, 0); 
+        playerBody.velocity.Normalize(); 
+        // playerBody.useGravity = true; 
+        playerBody.drag /= waterDragMult; 
+        playerBody.angularDrag /= waterDragMult; 
     }
 }

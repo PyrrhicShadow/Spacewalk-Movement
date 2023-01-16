@@ -48,7 +48,7 @@
                     "id": "bd1d56b6-a213-45de-9a25-fba1834259da",
                     "path": "<Gamepad>/rightStick",
                     "interactions": "",
-                    "processors": "ScaleVector2(x=5,y=5)",
+                    "processors": "ScaleVector2(x=20,y=20)",
                     "groups": "Gamepad",
                     "action": "FixedLook",
                     "isComposite": false,
@@ -169,7 +169,7 @@
                     "id": "cc4a56f6-eba5-4ec6-93d3-9d833d8abe1d",
                     "path": "<Gamepad>/leftStick",
                     "interactions": "",
-                    "processors": "StickDeadzone",
+                    "processors": "",
                     "groups": "Gamepad",
                     "action": "FixedMove",
                     "isComposite": false,
@@ -429,7 +429,7 @@
                     "id": "9cd6cc10-77a8-4af9-a58e-2f7461ba31d1",
                     "path": "<Gamepad>/leftStick",
                     "interactions": "",
-                    "processors": "StickDeadzone",
+                    "processors": "",
                     "groups": "Gamepad",
                     "action": "FreeMove",
                     "isComposite": false,
@@ -440,7 +440,7 @@
                     "id": "153c792a-bff9-48ec-999f-9487743a25b9",
                     "path": "<Gamepad>/rightStick",
                     "interactions": "",
-                    "processors": "StickDeadzone,ScaleVector2(x=5,y=5)",
+                    "processors": "ScaleVector2(x=10,y=10)",
                     "groups": "Gamepad",
                     "action": "FreeLook",
                     "isComposite": false,
@@ -1025,7 +1025,7 @@
             "actions": [
                 {
                     "name": "WaterMove",
-                    "type": "PassThrough",
+                    "type": "Value",
                     "id": "15997ada-a299-40d2-bf6a-a3ab2bf212ab",
                     "expectedControlType": "Vector2",
                     "processors": "",
@@ -1034,7 +1034,7 @@
                 },
                 {
                     "name": "WaterLook",
-                    "type": "PassThrough",
+                    "type": "Value",
                     "id": "4e9bda1e-cbbf-4000-a224-7963f836db2c",
                     "expectedControlType": "Vector2",
                     "processors": "",
@@ -1057,6 +1057,15 @@
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "Hold",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "Dive",
+                    "type": "Button",
+                    "id": "d9e389c4-8977-4412-a6c2-e27bdd4966d6",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
                     "initialStateCheck": true
                 }
             ],
@@ -1165,7 +1174,7 @@
                     "id": "7cf0092a-f168-451a-b99d-546b84e7fe86",
                     "path": "<Gamepad>/leftStick",
                     "interactions": "",
-                    "processors": "StickDeadzone",
+                    "processors": "",
                     "groups": "Gamepad",
                     "action": "WaterMove",
                     "isComposite": false,
@@ -1176,7 +1185,7 @@
                     "id": "25f12b91-2433-4439-a4f0-209f70041ca8",
                     "path": "<Gamepad>/rightStick",
                     "interactions": "",
-                    "processors": "StickDeadzone,ScaleVector2(x=5,y=5)",
+                    "processors": "ScaleVector2(x=20,y=20)",
                     "groups": "Gamepad",
                     "action": "WaterLook",
                     "isComposite": false,
@@ -1234,6 +1243,28 @@
                     "processors": "",
                     "groups": "",
                     "action": "SwimDown",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "02243cca-7df2-455b-8bf1-5605f932dcb2",
+                    "path": "<Gamepad>/leftTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "Dive",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e10c2775-3667-4d45-a0f8-e92e7342baf2",
+                    "path": "<Keyboard>/x",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard/Mouse",
+                    "action": "Dive",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

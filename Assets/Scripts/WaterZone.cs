@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class WaterZone : MonoBehaviour {
+    [SerializeField] float waterDragMult; 
     private void OnTriggerStay(Collider other) {
-        if (!other.CompareTag("Player")) {
-            Rigidbody otherBody = other.gameObject.GetComponent<Rigidbody>(); 
-            if (otherBody != null) {
-                otherBody.useGravity = false; 
+        Rigidbody otherBody = other.attachedRigidbody; 
+        if (otherBody != null) {
+            otherBody.WakeUp(); 
+            if (otherBody.velocity.y < 0) {
+                otherBody.AddForce(-Physics.gravity, ForceMode.Acceleration); 
             }
             otherBody = null; 
         }
@@ -15,12 +17,14 @@ public class WaterZone : MonoBehaviour {
 
     private void OnTriggerExit(Collider other) {
         if (other.CompareTag("Player")) {
-            other.gameObject.GetComponent<RigidbodyMovement>().OnWaterExit(); 
+            other.gameObject.GetComponent<RigidbodyMovement>().OnWaterExit(waterDragMult); 
         }
         else {
-            Rigidbody otherBody = other.gameObject.GetComponent<Rigidbody>(); 
+            Rigidbody otherBody = other.attachedRigidbody; 
             if (otherBody != null) {
-                otherBody.useGravity = true; 
+                // otherBody.useGravity = true; 
+                otherBody.drag /= waterDragMult; 
+                otherBody.angularDrag /= waterDragMult; 
             }
             otherBody = null; 
         }
@@ -28,12 +32,15 @@ public class WaterZone : MonoBehaviour {
 
     private void OnTriggerEnter(Collider other) {
         if (other.CompareTag("Player")) {
-            other.gameObject.GetComponent<RigidbodyMovement>().OnWaterEnter(); 
+            other.gameObject.GetComponent<RigidbodyMovement>().OnWaterEnter(waterDragMult); 
         }
         else {
-            Rigidbody otherBody = other.gameObject.GetComponent<Rigidbody>(); 
+            Rigidbody otherBody = other.attachedRigidbody; 
             if (otherBody != null) {
-                otherBody.useGravity = false; 
+                // otherBody.useGravity = false; 
+                otherBody.velocity = new Vector3(otherBody.velocity.x, 0, otherBody.velocity.z); 
+                otherBody.drag *= waterDragMult; 
+                otherBody.angularDrag *= waterDragMult; 
             }
             otherBody = null; 
         }
