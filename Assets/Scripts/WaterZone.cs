@@ -4,14 +4,32 @@ using UnityEngine;
 
 public class WaterZone : MonoBehaviour {
     [SerializeField] float waterDragMult; 
+    private float timer = 0;
+    [SerializeField] float bouyancyInterval; 
+    private bool bouyantFrame = true; 
+
+    // private void FixedUpdate() {
+    //     if (!bouyantFrame) {
+    //         if (timer < bouyancyInterval) {
+    //             timer += Time.fixedDeltaTime; 
+    //         }
+    //         else {
+    //             timer = 0; 
+    //             bouyantFrame = true; 
+    //         }
+    //     }
+    // } 
+
     private void OnTriggerStay(Collider other) {
-        Rigidbody otherBody = other.attachedRigidbody; 
-        if (otherBody != null) {
-            otherBody.WakeUp(); 
-            if (otherBody.velocity.y < 0) {
-                otherBody.AddForce(-Physics.gravity, ForceMode.Acceleration); 
+        if (!other.CompareTag("Player")) {
+            Rigidbody otherBody = other.attachedRigidbody; 
+            if (otherBody != null) {
+                otherBody.WakeUp(); 
+                if (otherBody.velocity.y < 0) {
+                    otherBody.AddForce(-Physics.gravity, ForceMode.Acceleration); 
+                }
+                otherBody = null; 
             }
-            otherBody = null; 
         }
     }
 

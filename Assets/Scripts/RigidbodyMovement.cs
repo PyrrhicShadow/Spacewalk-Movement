@@ -53,6 +53,7 @@ public class RigidbodyMovement : MonoBehaviour {
         }
         else if (playerInput.currentActionMap == playerInput.actions.FindActionMap("Water")) {
             FreeMove(); 
+            // Buoyancy(); 
             Dive(); 
         }
         else {
@@ -225,8 +226,11 @@ public class RigidbodyMovement : MonoBehaviour {
     }
 
     private void Buoyancy() {
-        // playerBody.AddForce(Vector3.up, ForceMode.Acceleration);
-        playerBody.velocity = new Vector3(playerBody.velocity.x, 0, playerBody.velocity.z); 
+        if (!ascending && !descending) {
+            if (playerBody.velocity.y < 0) {
+                playerBody.AddForce(-Physics.gravity, ForceMode.Acceleration); 
+            }
+        }
     }
 
     /** Buttons **/
