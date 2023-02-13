@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using PyrrhicSilva.Movement; 
 
 public class GameManager : MonoBehaviour {
     [SerializeField] Vector3 gravityValue; 
