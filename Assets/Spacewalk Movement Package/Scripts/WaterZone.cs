@@ -5,9 +5,9 @@ using UnityEngine;
 namespace PyrrhicSilva.Movement {
     public class WaterZone : MonoBehaviour {
         [SerializeField] float waterDragMult; 
-        private float timer = 0;
+        // private float timer = 0;
         [SerializeField] float bouyancyInterval; 
-        private bool bouyantFrame = true; 
+        // private bool bouyantFrame = true; 
 
         // private void FixedUpdate() {
         //     if (!bouyantFrame) {
